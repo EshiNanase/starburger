@@ -60,6 +60,16 @@ def product_list_api(request):
 @api_view(['POST'])
 def register_order(request):
     data = request.data
+    print(data.get('products'))
+
+    if data.get('products') is None:
+        return Response({'error': 'products key not presented or null'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not isinstance(data['products'], list):
+        return Response({'error': 'products key is not list'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not data['products']:
+        return Response({'error': 'products key cant be empty'}, status=status.HTTP_400_BAD_REQUEST)
 
     order = Order.objects.create(
         first_name=data['firstname'],
