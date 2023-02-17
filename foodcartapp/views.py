@@ -1,13 +1,17 @@
-from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+
 import json
 
 from .models import Product, Order, OrderItem
 
 
+@api_view(['GET'])
 def banners_list_api(request):
     # FIXME move data to db?
-    return JsonResponse([
+    return Response([
         {
             'title': 'Burger',
             'src': static('burger.jpg'),
@@ -23,12 +27,11 @@ def banners_list_api(request):
             'src': static('tasty.jpg'),
             'text': 'Food is incomplete without a tasty dessert',
         }
-    ], safe=False, json_dumps_params={
-        'ensure_ascii': False,
-        'indent': 4,
-    })
+    ]
+    )
 
 
+@api_view(['GET'])
 def product_list_api(request):
     products = Product.objects.select_related('category').available()
 
@@ -51,14 +54,12 @@ def product_list_api(request):
             }
         }
         dumped_products.append(dumped_product)
-    return JsonResponse(dumped_products, safe=False, json_dumps_params={
-        'ensure_ascii': False,
-        'indent': 4,
-    })
+    return Response(dumped_products)
 
 
+@api_view(['POST'])
 def register_order(request):
-    data = json.loads(request.body.decode())
+    data = request.data
 
     order = Order.objects.create(
         first_name=data['firstname'],
@@ -73,5 +74,4 @@ def register_order(request):
             quantity=product['quantity'],
             order=order
         )
-
-    return JsonResponse({})
+    return Response(status.HTTP_200_OK)
