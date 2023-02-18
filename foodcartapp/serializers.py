@@ -12,7 +12,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
 
     products = serializers.ListField(
-        child=OrderItemSerializer()
+        child=OrderItemSerializer(),
+        allow_empty=False,
+        write_only=True
     )
 
     class Meta:
