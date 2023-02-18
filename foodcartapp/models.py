@@ -1,7 +1,13 @@
+import requests
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MinValueValidator
 from django.utils import timezone
+from geopy import distance
+from restaurateur.ya import fetch_coordinates
+
+# FIXME
+from star_burger.settings import YANDEX_API_TOKEN
 
 
 STATUS_CHOICES = (
@@ -220,18 +226,25 @@ class Order(models.Model):
 
         restaurant_products_available = {}
         for restaurant in restaurants:
-            restaurant_products_available[restaurant.name] = []
+            restaurant_products_available[restaurant] = []
             for item in restaurant.menu_items.all():
                 if item.availability:
-                    restaurant_products_available[restaurant.name].append(item.product.id)
+                    restaurant_products_available[restaurant].append(item.product.id)
 
-        restaurants_availibility = []
+        restaurants_availibility = {}
         for restaurant in restaurant_products_available:
             order_item_ids = [product.product.id for product in self.items.prefetch_related('product')]
             if all(item in restaurant_products_available[restaurant] for item in order_item_ids):
-                restaurants_availibility.append(restaurant)
 
-        return restaurants_availibility
+                try:
+                    client_coordinates = fetch_coordinates(YANDEX_API_TOKEN, self.address)[::-1]
+                except requests.RequestException:
+                    return 'Invalid data'
+                restaurant_coordinates = fetch_coordinates(YANDEX_API_TOKEN, restaurant.address)[::-1]
+                distance_between_client_restaurant = distance.distance(restaurant_coordinates, client_coordinates).km
+
+                restaurants_availibility[restaurant.name] = round(distance_between_client_restaurant, 2)
+        return sorted(restaurants_availibility.items(), key=lambda x: x[1])
 
     class Meta:
         verbose_name = 'Заказ'

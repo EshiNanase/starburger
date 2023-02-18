@@ -32,7 +32,14 @@
         <td>{{ item.get_payment_display }}</td>
         <td>{{ item.cost }} руб.</td>
         {% if not item.restaurant %}
-          <td>Могут приготовить: {{ item.find_restaurant|join:", "}}</td>
+          <td>
+          <details>
+            <summary>Следующие рестораны могут приготовить<br></summary>
+            {% for restaurant, distance in item.find_restaurant %}
+              <h4>{{ restaurant }} - {{ distance }}</h4> <br>
+            {% endfor %}
+          </details>
+          </td>
         {% else %}
           <td>Готовит {{ item.restaurant.name }}</td>
         {% endif %}
