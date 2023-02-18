@@ -146,6 +146,12 @@ class Order(models.Model):
         verbose_name='Адрес'
     )
 
+    def get_price(self):
+        price = 0
+        for product in self.items.all():
+            price += float(product.product.price)*int(product.quantity)
+        return price
+
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
@@ -163,14 +169,15 @@ class OrderItem(models.Model):
     )
     quantity = models.IntegerField(
         null=False,
-        default=0,
+        default=1,
         verbose_name='Количество'
     )
     order = models.ForeignKey(
         null=False,
         to=Order,
         on_delete=models.CASCADE,
-        verbose_name='Заказ'
+        verbose_name='Заказ',
+        related_name='items'
     )
 
     class Meta:
