@@ -69,21 +69,17 @@ def register_order(request):
         lastname=data['lastname'],
         phonenumber=data['phonenumber'],
         address=data['address'],
-        cost=0
     )
-
-    for product in data['products']:
-        order_item = OrderItem.objects.create(
-            product=Product.objects.get(id=product['product']),
-            quantity=product['quantity'],
+    for item in data['products']:
+        product = Product.objects.get(id=item['product'])
+        quantity = item['quantity']
+        cost = product.price
+        OrderItem.objects.create(
+            product=product,
+            quantity=quantity,
             order=order,
-            cost=0
+            cost=cost
         )
-        order_item.cost = order_item.set_cost()
-        order_item.save()
-
-    order.cost = order.get_cost()
-    order.save()
 
     serializer_data = serializer.data
     serializer_data['id'] = order.id

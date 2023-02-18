@@ -128,9 +128,7 @@ class RestaurantMenuItem(models.Model):
 class OrderQuerySet(models.QuerySet):
 
     def count_cost(self):
-        queryset = self.annotate(cost=models.Sum(models.F('items__product__price')*models.F('items__quantity')))
-        for i in queryset:
-            print(i.cost)
+        queryset = self.annotate(cost=models.Sum(models.F('items__cost')*models.F('items__quantity')))
         return queryset
 
 
@@ -155,14 +153,6 @@ class Order(models.Model):
         max_length=256,
         verbose_name='Адрес'
     )
-    # cost = models.DecimalField(
-    #     null=False,
-    #     default=0,
-    #     max_digits=8,
-    #     decimal_places=2,
-    #     validators=[MinValueValidator(0)],
-    #     verbose_name='Итоговая сумма'
-    # )
     objects = OrderQuerySet.as_manager()
 
     class Meta:
@@ -198,7 +188,7 @@ class OrderItem(models.Model):
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(0)],
-        verbose_name='Сумма'
+        verbose_name='Стоимость'
     )
 
     def set_cost(self):

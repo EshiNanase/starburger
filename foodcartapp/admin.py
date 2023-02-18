@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.db import models
 
 from .models import Product
 from .models import ProductCategory
@@ -114,5 +115,20 @@ class OrderItemAdmin(admin.TabularInline):
 
 
 @admin.register(Order)
-class OrderAmin(admin.ModelAdmin):
+class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemAdmin]
+    fieldsets = (
+        (
+            None, {'fields': ('firstname', 'lastname', 'phonenumber', 'address', 'get_cost')}
+        ),
+    )
+    readonly_fields = ['get_cost']
+
+    def get_cost(self, obj):
+        cost = 0
+        for item in obj.items.all():
+            cost += item.cost*item.quantity
+        return cost
+
+    get_cost.short_description = 'Итоговая сумма'
+
