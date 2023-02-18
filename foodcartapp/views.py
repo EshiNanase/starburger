@@ -71,7 +71,7 @@ def register_order(request):
         phonenumber=data['phonenumber'],
         address=data['address'],
     )
-    0/0
+
     for item in data['products']:
         product = Product.objects.get(id=item['product'])
         quantity = item['quantity']
