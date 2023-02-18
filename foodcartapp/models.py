@@ -11,6 +11,11 @@ STATUS_CHOICES = (
     ('Successfully delivered', 'Доставлен')
 )
 
+PAYMENT_CHOICES = (
+    ('Cash', 'Наличность'),
+    ('Card', 'Карта')
+)
+
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -188,6 +193,14 @@ class Order(models.Model):
         null=True,
         db_index=True,
         verbose_name='Доставлен в'
+    )
+    payment = models.CharField(
+        blank=False,
+        choices=STATUS_CHOICES,
+        default='Card',
+        max_length=256,
+        verbose_name='Оплата',
+        db_index=True
     )
 
     objects = OrderQuerySet.as_manager()
