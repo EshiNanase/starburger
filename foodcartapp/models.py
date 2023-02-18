@@ -180,30 +180,58 @@ class Order(models.Model):
         verbose_name='Комментарий'
     )
     register_time = models.DateTimeField(
+        null=False,
+        blank=False,
         db_index=True,
         default=timezone.now,
         verbose_name='Зарегистрирован в'
     )
     contact_time = models.DateTimeField(
         null=True,
+        blank=True,
         db_index=True,
         verbose_name='Согласован в'
     )
     delivery_time = models.DateTimeField(
         null=True,
+        blank=True,
         db_index=True,
         verbose_name='Доставлен в'
     )
     payment = models.CharField(
         blank=False,
-        choices=STATUS_CHOICES,
+        choices=PAYMENT_CHOICES,
         default='Card',
         max_length=256,
         verbose_name='Оплата',
         db_index=True
     )
+    restaurant = models.ForeignKey(
+        null=True,
+        to=Restaurant,
+        on_delete=models.SET_NULL,
+        verbose_name='Ресторан'
+    )
 
     objects = OrderQuerySet.as_manager()
+
+    def find_restaurant(self):
+        restaurants = Restaurant.objects.prefetch_related('menu_items__product')
+
+        restaurant_products_available = {}
+        for restaurant in restaurants:
+            restaurant_products_available[restaurant.name] = []
+            for item in restaurant.menu_items.all():
+                if item.availability:
+                    restaurant_products_available[restaurant.name].append(item.product.id)
+
+        restaurants_availibility = []
+        for restaurant in restaurant_products_available:
+            order_item_ids = [product.product.id for product in self.items.prefetch_related('product')]
+            if all(item in restaurant_products_available[restaurant] for item in order_item_ids):
+                restaurants_availibility.append(restaurant)
+
+        return restaurants_availibility
 
     class Meta:
         verbose_name = 'Заказ'
@@ -240,9 +268,6 @@ class OrderItem(models.Model):
         validators=[MinValueValidator(0)],
         verbose_name='Стоимость'
     )
-
-    def set_cost(self):
-        self.cost = float(self.product.price) * int(self.quantity)
 
     class Meta:
         verbose_name = 'Товар в заказе'

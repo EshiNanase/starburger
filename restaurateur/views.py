@@ -86,13 +86,13 @@ def view_products(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_restaurants(request):
     return render(request, template_name="restaurants_list.html", context={
-        'restaurants': Restaurant.objects.all(),
+        'restaurants': list(Restaurant.objects.all()),
     })
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = list(Order.objects.count_cost())
+    orders = list(Order.objects.count_cost().prefetch_related('restaurant').order_by('status'))
     return render(request, template_name='order_items.html', context={
         'orders': orders,
     })

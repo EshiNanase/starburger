@@ -4,6 +4,7 @@ from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.encoding import iri_to_uri
+from datetime import datetime
 
 from .models import Product
 from .models import ProductCategory
@@ -122,7 +123,7 @@ class OrderAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             None, {'fields': (
-                'firstname', 'lastname', 'phonenumber', 'address', 'comment', 'status', 'get_cost', ('register_time', 'delivery_time', 'contact_time',)
+                'firstname', 'lastname', 'phonenumber', 'address', 'comment', 'status', 'payment', 'get_cost', 'restaurant', ('register_time', 'delivery_time', 'contact_time',)
             )
             }
         ),
@@ -136,6 +137,13 @@ class OrderAdmin(admin.ModelAdmin):
         return cost
 
     get_cost.short_description = 'Итоговая сумма'
+
+    def save_model(self, request, obj, form, change):
+        if obj.restaurant and obj.status == 'Contacting client':
+            obj.status = 'Packing order'
+        if obj.status != 'Contacting client' and not obj.contact_time:
+            obj.contact_time = datetime.now()
+        super(OrderAdmin, self).save_model(request, obj, form, change)
 
     def response_post_save_change(self, request, obj):
         res = super().response_post_save_change(request, obj)

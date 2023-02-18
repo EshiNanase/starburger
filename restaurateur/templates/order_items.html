@@ -17,6 +17,7 @@
       <th>Статус заказа</th>
       <th>Способ оплаты</th>
       <th>Стоимость заказа</th>
+      <th>Ресторан</th>
       <th>Клиент</th>
       <th>Телефон</th>
       <th>Адрес доставки</th>
@@ -30,6 +31,11 @@
         <td>{{ item.get_status_display }}</td>
         <td>{{ item.get_payment_display }}</td>
         <td>{{ item.cost }} руб.</td>
+        {% if not item.restaurant %}
+          <td>Могут приготовить: {{ item.find_restaurant|join:", "}}</td>
+        {% else %}
+          <td>Готовит {{ item.restaurant.name }}</td>
+        {% endif %}
         <td>{{ item.firstname }} {{ item.lastname }}</td>
         <td>{{ item.phonenumber }}</td>
         <td>{{ item.address }}</td>
