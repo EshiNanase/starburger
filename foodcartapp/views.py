@@ -2,7 +2,7 @@ from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-import phonenumbers
+from .serializers import OrderSerializer
 
 from .models import Product, Order, OrderItem
 
@@ -58,41 +58,45 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    data = request.data
+    # data = request.data
+    #
+    # if data.get('products') is None:
+    #     return Response({'error': 'products key not presented or null'}, status=status.HTTP_400_BAD_REQUEST)
+    #
+    # if not isinstance(data['products'], list):
+    #     return Response({'error': 'products key is not list'}, status=status.HTTP_400_BAD_REQUEST)
+    #
+    # if not data['products']:
+    #     return Response({'error': 'products key cant be empty'}, status=status.HTTP_400_BAD_REQUEST)
+    #
+    # if None in data.values():
+    #     return Response(
+    #         {'error': f'{", ".join([key for key in data.keys() if data[key] is None])} cant be empty'},
+    #         status=status.HTTP_400_BAD_REQUEST)
+    #
+    # if len(data) != 5 or "" in data.values():
+    #     return Response(
+    #         {'error': 'five keys need to be presented and they cant be empty: products, firstname, lastname, address, phonenumber'},
+    #         status=status.HTTP_400_BAD_REQUEST)
+    #
+    # phone_number = phonenumbers.parse(data['phonenumber'])
+    # if not phonenumbers.is_valid_number(phone_number):
+    #     return Response({'error': 'phonenumber key not valid'}, status=status.HTTP_400_BAD_REQUEST)
+    #
+    # str_check = [key for key in data if key != 'products' and isinstance(data[key], str)]
+    # if str_check:
+    #     return Response(
+    #         {'error': f'{", ".join(str_check)} need to be str'},
+    #         status=status.HTTP_400_BAD_REQUEST)
+    #
+    # products = Product.objects.all()
+    # for product in data['products']:
+    #     if not products.filter(id=product['product']):
+    #         return Response({'error': 'product key not possible'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if data.get('products') is None:
-        return Response({'error': 'products key not presented or null'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if not isinstance(data['products'], list):
-        return Response({'error': 'products key is not list'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if not data['products']:
-        return Response({'error': 'products key cant be empty'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if None in data.values():
-        return Response(
-            {'error': f'{", ".join([key for key in data.keys() if data[key] is None])} cant be empty'},
-            status=status.HTTP_400_BAD_REQUEST)
-
-    if len(data) != 5 or "" in data.values():
-        return Response(
-            {'error': 'five keys need to be presented and they cant be empty: products, firstname, lastname, address, phonenumber'},
-            status=status.HTTP_400_BAD_REQUEST)
-
-    phone_number = phonenumbers.parse(data['phonenumber'])
-    if not phonenumbers.is_valid_number(phone_number):
-        return Response({'error': 'phonenumber key not valid'}, status=status.HTTP_400_BAD_REQUEST)
-
-    str_check = [key for key in data if key != 'products' and isinstance(data[key], str)]
-    if str_check:
-        return Response(
-            {'error': f'{", ".join(str_check)} need to be str'},
-            status=status.HTTP_400_BAD_REQUEST)
-
-    products = Product.objects.all()
-    for product in data['products']:
-        if not products.filter(id=product['product']):
-            return Response({'error': 'product key not possible'}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.data
 
     order = Order.objects.create(
         first_name=data['firstname'],
