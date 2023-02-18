@@ -1,7 +1,7 @@
 from django.templatetags.static import static
+from django.db import transaction
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
 from .serializers import OrderSerializer
 
 from .models import Product, Order, OrderItem
@@ -56,6 +56,7 @@ def product_list_api(request):
     return Response(dumped_products)
 
 
+@transaction.atomic
 @api_view(['POST'])
 def register_order(request):
 
@@ -70,6 +71,7 @@ def register_order(request):
         phonenumber=data['phonenumber'],
         address=data['address'],
     )
+    0/0
     for item in data['products']:
         product = Product.objects.get(id=item['product'])
         quantity = item['quantity']
