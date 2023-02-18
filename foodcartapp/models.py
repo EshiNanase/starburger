@@ -4,6 +4,14 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MinValueValidator
 
 
+STATUS_CHOICES = (
+    ('Contacting client', 'Необработан'),
+    ('Packing order', 'Собирается'),
+    ('Delivering order', 'В процессе доставки'),
+    ('Successfully delivered', 'Доставлен')
+)
+
+
 class Restaurant(models.Model):
     name = models.CharField(
         'название',
@@ -153,6 +161,14 @@ class Order(models.Model):
         max_length=256,
         verbose_name='Адрес'
     )
+    status = models.CharField(
+        blank=False,
+        choices=STATUS_CHOICES,
+        default='Contacting client',
+        max_length=256,
+        verbose_name='Статус заказа',
+        db_index=True
+    )
     objects = OrderQuerySet.as_manager()
 
     class Meta:
@@ -173,7 +189,7 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(
         null=False,
         default=1,
-        verbose_name='Количество'
+        verbose_name='Количество',
     )
     order = models.ForeignKey(
         null=False,

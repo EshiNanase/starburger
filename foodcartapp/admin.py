@@ -118,9 +118,10 @@ class OrderItemAdmin(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemAdmin]
+    list_display = ['__str__', 'phonenumber', 'status', 'get_cost']
     fieldsets = (
         (
-            None, {'fields': ('firstname', 'lastname', 'phonenumber', 'address', 'get_cost')}
+            None, {'fields': ('firstname', 'lastname', 'phonenumber', 'address', 'status', 'get_cost')}
         ),
     )
     readonly_fields = ['get_cost']
