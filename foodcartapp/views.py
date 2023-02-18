@@ -78,6 +78,9 @@ def register_order(request):
             order=order
         )
 
+    order.cost = order.get_cost()
+    order.save()
+
     serializer_data = serializer.data
     serializer_data['id'] = order.id
 

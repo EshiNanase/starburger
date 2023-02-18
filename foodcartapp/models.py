@@ -124,6 +124,15 @@ class RestaurantMenuItem(models.Model):
         return f"{self.restaurant.name} - {self.product.name}"
 
 
+class OrderQuerySet(models.QuerySet):
+
+    def count_cost(self):
+        for order in self:
+            order.cost = order.get_cost()
+            order.save()
+        return self
+
+
 class Order(models.Model):
     firstname = models.CharField(
         blank=False,
@@ -145,12 +154,19 @@ class Order(models.Model):
         max_length=256,
         verbose_name='Адрес'
     )
+    cost = models.PositiveIntegerField(
+        null=False,
+        default=0,
+        verbose_name='Итоговая сумма'
+    )
 
-    def get_price(self):
-        price = 0
+    objects = OrderQuerySet.as_manager()
+
+    def get_cost(self):
+        cost = 0
         for product in self.items.all():
-            price += float(product.product.price)*int(product.quantity)
-        return price
+            cost += float(product.product.price)*int(product.quantity)
+        return cost
 
     class Meta:
         verbose_name = 'Заказ'
