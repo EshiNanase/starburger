@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
+from django.core.validators import MinValueValidator
 
 
 class Restaurant(models.Model):
@@ -127,10 +128,10 @@ class RestaurantMenuItem(models.Model):
 class OrderQuerySet(models.QuerySet):
 
     def count_cost(self):
-        for order in self:
-            order.cost = order.get_cost()
-            order.save()
-        return self
+        queryset = self.annotate(cost=models.Sum(models.F('items__product__price')*models.F('items__quantity')))
+        for i in queryset:
+            print(i.cost)
+        return queryset
 
 
 class Order(models.Model):
@@ -154,19 +155,15 @@ class Order(models.Model):
         max_length=256,
         verbose_name='Адрес'
     )
-    cost = models.PositiveIntegerField(
-        null=False,
-        default=0,
-        verbose_name='Итоговая сумма'
-    )
-
+    # cost = models.DecimalField(
+    #     null=False,
+    #     default=0,
+    #     max_digits=8,
+    #     decimal_places=2,
+    #     validators=[MinValueValidator(0)],
+    #     verbose_name='Итоговая сумма'
+    # )
     objects = OrderQuerySet.as_manager()
-
-    def get_cost(self):
-        cost = 0
-        for product in self.items.all():
-            cost += float(product.product.price)*int(product.quantity)
-        return cost
 
     class Meta:
         verbose_name = 'Заказ'
@@ -195,6 +192,17 @@ class OrderItem(models.Model):
         verbose_name='Заказ',
         related_name='items'
     )
+    cost = models.DecimalField(
+        null=False,
+        default=0,
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name='Сумма'
+    )
+
+    def set_cost(self):
+        self.cost = float(self.product.price) * int(self.quantity)
 
     class Meta:
         verbose_name = 'Товар в заказе'

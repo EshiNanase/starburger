@@ -69,14 +69,18 @@ def register_order(request):
         lastname=data['lastname'],
         phonenumber=data['phonenumber'],
         address=data['address'],
+        cost=0
     )
 
     for product in data['products']:
-        OrderItem.objects.create(
+        order_item = OrderItem.objects.create(
             product=Product.objects.get(id=product['product']),
             quantity=product['quantity'],
-            order=order
+            order=order,
+            cost=0
         )
+        order_item.cost = order_item.set_cost()
+        order_item.save()
 
     order.cost = order.get_cost()
     order.save()
