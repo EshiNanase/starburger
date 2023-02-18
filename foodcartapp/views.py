@@ -2,8 +2,7 @@ from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-
-import json
+import phonenumbers
 
 from .models import Product, Order, OrderItem
 
@@ -80,7 +79,21 @@ def register_order(request):
             {'error': 'five keys need to be presented and they cant be empty: products, firstname, lastname, address, phonenumber'},
             status=status.HTTP_400_BAD_REQUEST)
 
-    
+    phone_number = phonenumbers.parse(data['phonenumber'])
+    if not phonenumbers.is_valid_number(phone_number):
+        return Response({'error': 'phonenumber key not valid'}, status=status.HTTP_400_BAD_REQUEST)
+
+    str_check = [key for key in data if key != 'products' and isinstance(data[key], str)]
+    if str_check:
+        return Response(
+            {'error': f'{", ".join(str_check)} need to be str'},
+            status=status.HTTP_400_BAD_REQUEST)
+
+    products = Product.objects.all()
+    for product in data['products']:
+        if not products.filter(id=product['product']):
+            return Response({'error': 'product key not possible'}, status=status.HTTP_400_BAD_REQUEST)
+
     order = Order.objects.create(
         first_name=data['firstname'],
         last_name=data['lastname'],
