@@ -121,7 +121,10 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'phonenumber', 'status', 'get_cost']
     fieldsets = (
         (
-            None, {'fields': ('firstname', 'lastname', 'phonenumber', 'address', 'status', 'get_cost')}
+            None, {'fields': (
+                'firstname', 'lastname', 'phonenumber', 'address', 'comment', 'status', 'get_cost', ('register_time', 'contact_time', 'deliver_time')
+            )
+            }
         ),
     )
     readonly_fields = ['get_cost']
