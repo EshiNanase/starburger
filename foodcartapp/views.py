@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .serializers import OrderSerializer
 
 from .models import Product, Order, OrderItem
+from geocoder.models import AddressClient
 
 
 @api_view(['GET'])
@@ -71,6 +72,11 @@ def register_order(request):
         phonenumber=data['phonenumber'],
         address=data['address'],
     )
+
+    address = AddressClient.objects.create(address=data['address'])
+    address.set_coordinates()
+    print(address.longitude)
+    print(address.latitude)
 
     for item in data['products']:
         product = Product.objects.get(id=item['product'])

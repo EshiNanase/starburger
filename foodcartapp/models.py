@@ -1,13 +1,9 @@
-import requests
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MinValueValidator
 from django.utils import timezone
 from geopy import distance
-from restaurateur.ya import fetch_coordinates
-
-# FIXME
-from star_burger.settings import YANDEX_API_TOKEN
+from geocoder.models import AddressRestaurant, AddressClient
 
 
 STATUS_CHOICES = (
@@ -214,6 +210,7 @@ class Order(models.Model):
     )
     restaurant = models.ForeignKey(
         null=True,
+        blank=True,
         to=Restaurant,
         on_delete=models.SET_NULL,
         verbose_name='Ресторан'
@@ -236,11 +233,11 @@ class Order(models.Model):
             order_item_ids = [product.product.id for product in self.items.prefetch_related('product')]
             if all(item in restaurant_products_available[restaurant] for item in order_item_ids):
 
-                try:
-                    client_coordinates = fetch_coordinates(YANDEX_API_TOKEN, self.address)[::-1]
-                except requests.RequestException:
-                    return 'Invalid data'
-                restaurant_coordinates = fetch_coordinates(YANDEX_API_TOKEN, restaurant.address)[::-1]
+                client_address = AddressClient.objects.get(address=self.address)
+                client_coordinates = (client_address.latitude, client_address.longitude)
+
+                restaurant_address = AddressRestaurant.objects.get(address=restaurant.address)
+                restaurant_coordinates = (restaurant_address.latitude, restaurant_address.longitude)
                 distance_between_client_restaurant = distance.distance(restaurant_coordinates, client_coordinates).km
 
                 restaurants_availibility[restaurant.name] = round(distance_between_client_restaurant, 2)

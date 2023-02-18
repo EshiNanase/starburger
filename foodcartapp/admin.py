@@ -12,6 +12,8 @@ from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order
 from .models import OrderItem
+from geocoder.models import AddressRestaurant
+from geocoder.models import AddressClient
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -34,6 +36,15 @@ class RestaurantAdmin(admin.ModelAdmin):
     inlines = [
         RestaurantMenuItemInline
     ]
+
+    def save_model(self, request, obj, form, change):
+        updated_values = {'address': obj.address}
+        obj, created = AddressRestaurant.objects.update_or_create(
+            name=obj.name,
+            defaults=updated_values
+        )
+        obj.set_coordinates()
+        super(RestaurantAdmin, self).save_model(request, obj, form, change)
 
 
 @admin.register(Product)
@@ -143,6 +154,11 @@ class OrderAdmin(admin.ModelAdmin):
             obj.status = 'Packing order'
         if obj.status != 'Contacting client' and not obj.contact_time:
             obj.contact_time = datetime.now()
+
+        address, created = AddressRestaurant.objects.get_or_create(
+            address=obj.address
+        )
+        address.set_coordinates()
         super(OrderAdmin, self).save_model(request, obj, form, change)
 
     def response_post_save_change(self, request, obj):
