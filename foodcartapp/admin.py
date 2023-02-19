@@ -155,12 +155,12 @@ class OrderAdmin(admin.ModelAdmin):
             obj.status = 'Packing order'
         if obj.status != 'Contacting client' and not obj.contact_time:
             obj.contact_time = datetime.now()
-
         address, created = AddressClient.objects.get_or_create(
             address=obj.address
         )
-        address.set_coordinates()
-        address.save()
+        if created:
+            address.set_coordinates()
+            address.save()
         super(OrderAdmin, self).save_model(request, obj, form, change)
 
     def response_post_save_change(self, request, obj):
