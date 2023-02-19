@@ -39,11 +39,12 @@ class RestaurantAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         updated_values = {'address': obj.address}
-        obj, created = AddressRestaurant.objects.update_or_create(
+        address, created = AddressRestaurant.objects.update_or_create(
             name=obj.name,
             defaults=updated_values
         )
-        obj.set_coordinates()
+        address.set_coordinates()
+        address.save()
         super(RestaurantAdmin, self).save_model(request, obj, form, change)
 
 
@@ -155,10 +156,11 @@ class OrderAdmin(admin.ModelAdmin):
         if obj.status != 'Contacting client' and not obj.contact_time:
             obj.contact_time = datetime.now()
 
-        address, created = AddressRestaurant.objects.get_or_create(
+        address, created = AddressClient.objects.get_or_create(
             address=obj.address
         )
         address.set_coordinates()
+        address.save()
         super(OrderAdmin, self).save_model(request, obj, form, change)
 
     def response_post_save_change(self, request, obj):

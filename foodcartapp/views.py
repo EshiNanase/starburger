@@ -73,10 +73,9 @@ def register_order(request):
         address=data['address'],
     )
 
-    address = AddressClient.objects.create(address=data['address'])
+    address, created = AddressClient.objects.get_or_create(address=data['address'])
     address.set_coordinates()
-    print(address.longitude)
-    print(address.latitude)
+    address.save()
 
     for item in data['products']:
         product = Product.objects.get(id=item['product'])
