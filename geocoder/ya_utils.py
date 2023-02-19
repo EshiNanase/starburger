@@ -1,5 +1,4 @@
 import requests
-from geopy import distance
 
 
 def fetch_coordinates(apikey, address):

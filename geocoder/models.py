@@ -1,8 +1,8 @@
 from django.db import models
 from geocoder.ya_utils import fetch_coordinates
-from star_burger.settings import YANDEX_API_TOKEN
 from django.utils import timezone
 from decimal import Decimal
+from django.conf import settings
 
 
 class AddressClient(models.Model):
@@ -35,7 +35,7 @@ class AddressClient(models.Model):
     )
 
     def set_coordinates(self):
-        coordinates = fetch_coordinates(YANDEX_API_TOKEN, self.address)[::-1]
+        coordinates = fetch_coordinates(settings.YANDEX_API_TOKEN, self.address)[::-1]
         self.latitude = Decimal(coordinates[0])
         self.longitude = Decimal(coordinates[1])
 
@@ -83,7 +83,7 @@ class AddressRestaurant(models.Model):
     )
 
     def set_coordinates(self):
-        coordinates = fetch_coordinates(YANDEX_API_TOKEN, self.address)[::-1]
+        coordinates = fetch_coordinates(settings.YANDEX_API_TOKEN, self.address)[::-1]
         self.latitude = Decimal(coordinates[0])
         self.longitude = Decimal(coordinates[1])
 
