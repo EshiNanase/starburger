@@ -3,9 +3,11 @@ from django.db import transaction
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import OrderSerializer
+from django.conf import settings
 
 from .models import Product, Order, OrderItem
-from geocoder.models import AddressClient
+from geocoder.models import Address
+from geocoder.ya_utils import fetch_coordinates
 
 
 @api_view(['GET'])
@@ -73,8 +75,23 @@ def register_order(request):
         address=data['address'],
     )
 
-    address, created = AddressClient.objects.get_or_create(address=data['address'])
-    address.set_coordinates()
+    try:
+        coordinates = fetch_coordinates(settings.YANDEX_API_TOKEN, order.address)[::-1]
+    except TypeError:
+        coordinates = (None, None)
+    if False in coordinates:
+        order.bad_address = True
+        order.save()
+
+        latitude = 0
+        longitude = 0
+    else:
+        latitude, longitude = coordinates
+    address, created = Address.objects.get_or_create(
+        address=data['address'],
+        latitude=latitude,
+        longitude=longitude
+    )
     address.save()
 
     for item in data['products']:

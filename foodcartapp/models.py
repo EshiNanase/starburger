@@ -3,20 +3,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MinValueValidator
 from django.utils import timezone
 from geopy import distance
-from geocoder.models import AddressRestaurant, AddressClient
-
-
-STATUS_CHOICES = (
-    ('Contacting client', 'Необработан'),
-    ('Packing order', 'Собирается'),
-    ('Delivering order', 'В процессе доставки'),
-    ('Successfully delivered', 'Доставлен')
-)
-
-PAYMENT_CHOICES = (
-    ('Cash', 'Наличность'),
-    ('Card', 'Карта')
-)
+from geocoder.models import Address
 
 
 class Restaurant(models.Model):
@@ -148,71 +135,80 @@ class OrderQuerySet(models.QuerySet):
 
 
 class Order(models.Model):
+
+    status_choices = (
+        ('Contacting client', 'Необработан'),
+        ('Packing order', 'Собирается'),
+        ('Delivering order', 'В процессе доставки'),
+        ('Successfully delivered', 'Доставлен')
+    )
+
+    payment_choices = (
+        ('Cash', 'Наличность'),
+        ('Card', 'Карта')
+    )
+
     firstname = models.CharField(
-        blank=False,
         max_length=256,
         verbose_name='Имя'
     )
     lastname = models.CharField(
-        blank=False,
         max_length=256,
         verbose_name='Фамилия'
     )
     phonenumber = PhoneNumberField(
-        null=False,
         max_length=256,
         verbose_name='Телефон'
     )
     address = models.CharField(
-        blank=False,
         max_length=256,
         verbose_name='Адрес'
     )
+    bad_address = models.BooleanField(
+        default=False,
+        verbose_name='Нерабочий ли адрес'
+    )
     status = models.CharField(
-        blank=False,
-        choices=STATUS_CHOICES,
+        choices=status_choices,
         default='Contacting client',
         max_length=256,
         verbose_name='Статус заказа',
         db_index=True
     )
-    comment = models.CharField(
+    comment = models.TextField(
         blank=True,
-        max_length=256,
         verbose_name='Комментарий'
     )
-    register_time = models.DateTimeField(
-        null=False,
-        blank=False,
+    registered_at = models.DateTimeField(
         db_index=True,
         default=timezone.now,
         verbose_name='Зарегистрирован в'
     )
-    contact_time = models.DateTimeField(
+    contacted_at = models.DateTimeField(
         null=True,
         blank=True,
         db_index=True,
         verbose_name='Согласован в'
     )
-    delivery_time = models.DateTimeField(
+    delivered_at = models.DateTimeField(
         null=True,
         blank=True,
         db_index=True,
         verbose_name='Доставлен в'
     )
     payment = models.CharField(
-        blank=False,
-        choices=PAYMENT_CHOICES,
-        default='Card',
+        choices=payment_choices,
+        blank=True,
         max_length=256,
         verbose_name='Оплата',
         db_index=True
     )
-    restaurant = models.ForeignKey(
+    cooking_restaurant = models.ForeignKey(
         null=True,
         blank=True,
         to=Restaurant,
         on_delete=models.SET_NULL,
+        related_name='restaurant',
         verbose_name='Ресторан'
     )
 
@@ -233,14 +229,15 @@ class Order(models.Model):
             order_item_ids = [product.product.id for product in self.items.prefetch_related('product')]
             if all(item in restaurant_products_available[restaurant] for item in order_item_ids):
 
-                client_address = AddressClient.objects.get(address=self.address)
+                client_address = Address.objects.get(address=self.address)
                 client_coordinates = (client_address.latitude, client_address.longitude)
 
-                restaurant_address = AddressRestaurant.objects.get(address=restaurant.address)
+                restaurant_address = Address.objects.get(address=restaurant.address)
                 restaurant_coordinates = (restaurant_address.latitude, restaurant_address.longitude)
                 distance_between_client_restaurant = distance.distance(restaurant_coordinates, client_coordinates).km
 
                 restaurants_availibility[restaurant.name] = round(distance_between_client_restaurant, 2)
+
         return sorted(restaurants_availibility.items(), key=lambda x: x[1])
 
     class Meta:
@@ -253,26 +250,22 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     product = models.ForeignKey(
-        null=False,
         to=Product,
         verbose_name='Товар',
+        related_name='item',
         on_delete=models.CASCADE
     )
     quantity = models.IntegerField(
-        null=False,
         default=1,
         verbose_name='Количество',
     )
     order = models.ForeignKey(
-        null=False,
         to=Order,
         on_delete=models.CASCADE,
         verbose_name='Заказ',
         related_name='items'
     )
     cost = models.DecimalField(
-        null=False,
-        default=0,
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(0)],

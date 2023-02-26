@@ -31,17 +31,21 @@
         <td>{{ item.get_status_display }}</td>
         <td>{{ item.get_payment_display }}</td>
         <td>{{ item.cost }} руб.</td>
-        {% if not item.restaurant %}
+        {% if not item.cooking_restaurant %}
           <td>
+          {% if item.bad_address %}
+            Адрес неправильно заполнен
+          {% else %}
           <details>
             <summary>Следующие рестораны могут приготовить<br></summary>
             {% for restaurant, distance in item.find_restaurant %}
               <h4>{{ restaurant }} - {{ distance }}</h4> <br>
             {% endfor %}
           </details>
+          {% endif %}
           </td>
         {% else %}
-          <td>Готовит {{ item.restaurant.name }}</td>
+          <td>Готовит {{ item.cooking_restaurant.name }}</td>
         {% endif %}
         <td>{{ item.firstname }} {{ item.lastname }}</td>
         <td>{{ item.phonenumber }}</td>

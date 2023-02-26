@@ -12,8 +12,7 @@ from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order
 from .models import OrderItem
-from geocoder.models import AddressRestaurant
-from geocoder.models import AddressClient
+from geocoder.models import Address
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -39,7 +38,7 @@ class RestaurantAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         updated_values = {'address': obj.address}
-        address, created = AddressRestaurant.objects.update_or_create(
+        address, created = Address.objects.update_or_create(
             name=obj.name,
             defaults=updated_values
         )
@@ -135,7 +134,7 @@ class OrderAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             None, {'fields': (
-                'firstname', 'lastname', 'phonenumber', 'address', 'comment', 'status', 'payment', 'get_cost', 'restaurant', ('register_time', 'delivery_time', 'contact_time',)
+                'firstname', 'lastname', 'phonenumber', 'address', 'bad_address', 'comment', 'status', 'payment', 'get_cost', 'cooking_restaurant', ('registered_at', 'delivered_at', 'contacted_at',)
             )
             }
         ),
@@ -151,11 +150,11 @@ class OrderAdmin(admin.ModelAdmin):
     get_cost.short_description = 'Итоговая сумма'
 
     def save_model(self, request, obj, form, change):
-        if obj.restaurant and obj.status == 'Contacting client':
+        if obj.cooking_restaurant and obj.status == 'Contacting client':
             obj.status = 'Packing order'
-        if obj.status != 'Contacting client' and not obj.contact_time:
-            obj.contact_time = datetime.now()
-        address, created = AddressClient.objects.get_or_create(
+        if obj.status != 'Contacting client' and not obj.contacted_at:
+            obj.contacted_at = datetime.now()
+        address, created = Address.objects.get_or_create(
             address=obj.address
         )
         if created:

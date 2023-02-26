@@ -1,34 +1,31 @@
 from django.db import models
 from geocoder.ya_utils import fetch_coordinates
 from django.utils import timezone
-from decimal import Decimal
 from django.conf import settings
 
 
-class AddressClient(models.Model):
+class Address(models.Model):
 
     address = models.CharField(
-        blank=False,
+        unique=True,
         max_length=256,
         verbose_name='Адрес'
     )
     latitude = models.DecimalField(
-        null=False,
-        default=0,
+        blank=True,
+        null=True,
         max_digits=30,
         decimal_places=15,
         verbose_name='Широта'
     )
     longitude = models.DecimalField(
-        null=False,
-        default=0,
+        blank=True,
+        null=True,
         max_digits=30,
         decimal_places=15,
         verbose_name='Долгота'
     )
-    date_fill = models.DateTimeField(
-        null=False,
-        blank=False,
+    filled_at = models.DateTimeField(
         default=timezone.now,
         db_index=True,
         verbose_name='Дата создания'
@@ -36,60 +33,12 @@ class AddressClient(models.Model):
 
     def set_coordinates(self):
         coordinates = fetch_coordinates(settings.YANDEX_API_TOKEN, self.address)[::-1]
-        self.latitude = Decimal(coordinates[0])
-        self.longitude = Decimal(coordinates[1])
+        self.latitude, self.longitude = coordinates
+        self.save()
 
     class Meta:
-        verbose_name = 'Адрес клиента'
-        verbose_name_plural = 'Адреса клиентов'
+        verbose_name = 'Адрес'
+        verbose_name_plural = 'Адреса'
 
     def __str__(self):
-        return f'{self.address}'
-
-
-class AddressRestaurant(models.Model):
-
-    name = models.CharField(
-        blank=False,
-        max_length=256,
-        verbose_name='Название'
-    )
-
-    address = models.CharField(
-        blank=False,
-        max_length=256,
-        verbose_name='Адрес'
-    )
-    latitude = models.DecimalField(
-        null=False,
-        default=0,
-        max_digits=30,
-        decimal_places=15,
-        verbose_name='Широта'
-    )
-    longitude = models.DecimalField(
-        null=False,
-        default=0,
-        max_digits=30,
-        decimal_places=15,
-        verbose_name='Долгота'
-    )
-    date_fill = models.DateTimeField(
-        null=False,
-        blank=False,
-        default=timezone.now,
-        db_index=True,
-        verbose_name='Дата создания'
-    )
-
-    def set_coordinates(self):
-        coordinates = fetch_coordinates(settings.YANDEX_API_TOKEN, self.address)[::-1]
-        self.latitude = Decimal(coordinates[0])
-        self.longitude = Decimal(coordinates[1])
-
-    class Meta:
-        verbose_name = 'Адрес ресторана'
-        verbose_name_plural = 'Адреса ресторанов'
-
-    def __str__(self):
-        return f'{self.name}'
+        return self.address
