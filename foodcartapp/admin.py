@@ -13,6 +13,7 @@ from .models import RestaurantMenuItem
 from .models import Order
 from .models import OrderItem
 from geocoder.models import Address
+from geocoder.geocoder_utils import set_coordinates
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -37,13 +38,11 @@ class RestaurantAdmin(admin.ModelAdmin):
     ]
 
     def save_model(self, request, obj, form, change):
-        updated_values = {'address': obj.address}
-        address, created = Address.objects.update_or_create(
-            name=obj.name,
-            defaults=updated_values
+        address, created = Address.objects.get_or_create(
+            address=obj.address,
         )
-        address.set_coordinates()
-        address.save()
+        if created:
+            set_coordinates(address.id)
         super(RestaurantAdmin, self).save_model(request, obj, form, change)
 
 
@@ -134,7 +133,7 @@ class OrderAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             None, {'fields': (
-                'firstname', 'lastname', 'phonenumber', 'address', 'bad_address', 'comment', 'status', 'payment', 'get_cost', 'cooking_restaurant', ('registered_at', 'delivered_at', 'contacted_at',)
+                'firstname', 'lastname', 'phonenumber', 'address', 'comment', 'status', 'payment', 'get_cost', 'cooking_restaurant', ('registered_at', 'delivered_at', 'contacted_at',)
             )
             }
         ),
@@ -158,8 +157,7 @@ class OrderAdmin(admin.ModelAdmin):
             address=obj.address
         )
         if created:
-            address.set_coordinates()
-            address.save()
+            set_coordinates(address.id)
         super(OrderAdmin, self).save_model(request, obj, form, change)
 
     def response_post_save_change(self, request, obj):

@@ -1,7 +1,5 @@
 from django.db import models
-from geocoder.ya_utils import fetch_coordinates
 from django.utils import timezone
-from django.conf import settings
 
 
 class Address(models.Model):
@@ -30,11 +28,6 @@ class Address(models.Model):
         db_index=True,
         verbose_name='Дата создания'
     )
-
-    def set_coordinates(self):
-        coordinates = fetch_coordinates(settings.YANDEX_API_TOKEN, self.address)[::-1]
-        self.latitude, self.longitude = coordinates
-        self.save()
 
     class Meta:
         verbose_name = 'Адрес'

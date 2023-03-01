@@ -1,4 +1,6 @@
 import requests
+from django.conf import settings
+from geocoder.models import Address
 
 
 def fetch_coordinates(apikey, address):
@@ -18,3 +20,12 @@ def fetch_coordinates(apikey, address):
     lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
     return lon, lat
 
+
+def set_coordinates(address_id):
+    address = Address.objects.get(id=address_id)
+    try:
+        coordinates = fetch_coordinates(settings.YANDEX_API_TOKEN, address.address)[::-1]
+    except TypeError:
+        coordinates = (None, None)
+    address.latitude, address.longitude = coordinates
+    address.save()

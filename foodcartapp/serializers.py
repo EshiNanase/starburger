@@ -20,3 +20,12 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
+
+    def save(self, **kwargs):
+        order = Order.objects.create(
+            firstname=self.validated_data['firstname'],
+            lastname=self.validated_data['lastname'],
+            phonenumber=self.validated_data['phonenumber'],
+            address=self.validated_data['address'],
+        )
+        return order

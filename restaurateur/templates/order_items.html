@@ -1,4 +1,5 @@
 {% extends 'base_restaurateur_page.html' %}
+{% load order_restaurants %}
 
 {% block title %}Необработанные заказы | Star Burger{% endblock %}
 
@@ -25,33 +26,34 @@
       <th>Комментарий</th>
     </tr>
 
-    {% for item in orders %}
+    {% for order in orders %}
       <tr>
-        <td>{{ item.id }}</td>
-        <td>{{ item.get_status_display }}</td>
-        <td>{{ item.get_payment_display }}</td>
-        <td>{{ item.cost }} руб.</td>
-        {% if not item.cooking_restaurant %}
+        <td>{{ order.id }}</td>
+        <td>{{ order.get_status_display }}</td>
+        <td>{{ order.get_payment_display }}</td>
+        <td>{{ order.cost }} руб.</td>
+        {% if not order.cooking_restaurant %}
           <td>
-          {% if item.bad_address %}
-            Адрес неправильно заполнен
-          {% else %}
-          <details>
-            <summary>Следующие рестораны могут приготовить<br></summary>
-            {% for restaurant, distance in item.find_restaurant %}
-              <h4>{{ restaurant }} - {{ distance }}</h4> <br>
-            {% endfor %}
-          </details>
-          {% endif %}
+          {% find_restaurant order as order_restaurants %}
+            {% if order_restaurants is None %}
+              Адрес неправильно заполнен
+            {% else %}
+            <details>
+              <summary>Следующие рестораны могут приготовить<br></summary>
+              {% for restaurant, distance in order_restaurants %}
+                <h4>{{ restaurant }} - {{ distance }}</h4> <br>
+              {% endfor %}
+            </details>
+            {% endif %}
           </td>
         {% else %}
-          <td>Готовит {{ item.cooking_restaurant.name }}</td>
+          <td>Готовит {{ order.cooking_restaurant.name }}</td>
         {% endif %}
-        <td>{{ item.firstname }} {{ item.lastname }}</td>
-        <td>{{ item.phonenumber }}</td>
-        <td>{{ item.address }}</td>
-        <td><a href=" {% url 'admin:foodcartapp_order_change' object_id=item.id %}?next={{ request.path|urlencode }}"> Редактировать </a></td>
-        <td>{{ item.comment }}</td>
+        <td>{{ order.firstname }} {{ order.lastname }}</td>
+        <td>{{ order.phonenumber }}</td>
+        <td>{{ order.address }}</td>
+        <td><a href=" {% url 'admin:foodcartapp_order_change' object_id=order.id %}?next={{ request.path|urlencode }}"> Редактировать </a></td>
+        <td>{{ order.comment }}</td>
       </tr>
     {% endfor %}
    </table>

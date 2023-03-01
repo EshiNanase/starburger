@@ -164,14 +164,10 @@ class Order(models.Model):
         max_length=256,
         verbose_name='Адрес'
     )
-    bad_address = models.BooleanField(
-        default=False,
-        verbose_name='Нерабочий ли адрес'
-    )
     status = models.CharField(
         choices=status_choices,
         default='Contacting client',
-        max_length=256,
+        max_length=25,
         verbose_name='Статус заказа',
         db_index=True
     )
@@ -199,7 +195,7 @@ class Order(models.Model):
     payment = models.CharField(
         choices=payment_choices,
         blank=True,
-        max_length=256,
+        max_length=25,
         verbose_name='Оплата',
         db_index=True
     )
@@ -214,32 +210,6 @@ class Order(models.Model):
 
     objects = OrderQuerySet.as_manager()
 
-    def find_restaurant(self):
-        restaurants = Restaurant.objects.prefetch_related('menu_items__product')
-
-        restaurant_products_available = {}
-        for restaurant in restaurants:
-            restaurant_products_available[restaurant] = []
-            for item in restaurant.menu_items.all():
-                if item.availability:
-                    restaurant_products_available[restaurant].append(item.product.id)
-
-        restaurants_availibility = {}
-        for restaurant in restaurant_products_available:
-            order_item_ids = [product.product.id for product in self.items.prefetch_related('product')]
-            if all(item in restaurant_products_available[restaurant] for item in order_item_ids):
-
-                client_address = Address.objects.get(address=self.address)
-                client_coordinates = (client_address.latitude, client_address.longitude)
-
-                restaurant_address = Address.objects.get(address=restaurant.address)
-                restaurant_coordinates = (restaurant_address.latitude, restaurant_address.longitude)
-                distance_between_client_restaurant = distance.distance(restaurant_coordinates, client_coordinates).km
-
-                restaurants_availibility[restaurant.name] = round(distance_between_client_restaurant, 2)
-
-        return sorted(restaurants_availibility.items(), key=lambda x: x[1])
-
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
@@ -252,11 +222,9 @@ class OrderItem(models.Model):
     product = models.ForeignKey(
         to=Product,
         verbose_name='Товар',
-        related_name='item',
         on_delete=models.CASCADE
     )
     quantity = models.IntegerField(
-        default=1,
         verbose_name='Количество',
     )
     order = models.ForeignKey(
