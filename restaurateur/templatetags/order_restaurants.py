@@ -16,7 +16,7 @@ def find_restaurant(order):
             if item.availability:
                 restaurant_products_available[restaurant].append(item.product.id)
 
-    restaurants_availibility = {}
+    restaurants_availability = {}
     for restaurant in restaurant_products_available:
         order_item_ids = [product.product.id for product in order.items.prefetch_related('product')]
         if all(item in restaurant_products_available[restaurant] for item in order_item_ids):
@@ -30,6 +30,6 @@ def find_restaurant(order):
             restaurant_coordinates = (restaurant_address.latitude, restaurant_address.longitude)
             distance_between_client_restaurant = distance.distance(restaurant_coordinates, client_coordinates).km
 
-            restaurants_availibility[restaurant.name] = round(distance_between_client_restaurant, 2)
+            restaurants_availability[restaurant.name] = round(distance_between_client_restaurant, 2)
 
-    return sorted(restaurants_availibility.items(), key=lambda x: x[1])
+    return sorted(restaurants_availability.items(), key=lambda x: x[1])
