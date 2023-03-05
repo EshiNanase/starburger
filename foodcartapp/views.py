@@ -3,9 +3,8 @@ from django.db import transaction
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import OrderSerializer
-from django.conf import settings
 
-from .models import Product, Order, OrderItem
+from .models import Product
 from geocoder.models import Address
 from geocoder.geocoder_utils import set_coordinates
 
@@ -67,27 +66,13 @@ def register_order(request):
 
     serializer = OrderSerializer(data=data)
     serializer.is_valid(raise_exception=True)
+    serializer.save()
+    serializer_data = serializer.data
 
     address, created = Address.objects.get_or_create(
-        address=data['address'],
+        address=serializer_data['address'],
     )
     if created:
         set_coordinates(address.id)
-
-    order = serializer.save()
-
-    for item in data['products']:
-        product = Product.objects.get(id=item['product'])
-        quantity = item['quantity']
-        cost = product.price
-        OrderItem.objects.create(
-            product=product,
-            quantity=quantity,
-            order=order,
-            cost=cost
-        )
-
-    serializer_data = serializer.data
-    serializer_data['id'] = order.id
 
     return Response(serializer_data)

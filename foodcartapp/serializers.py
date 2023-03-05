@@ -6,26 +6,30 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity']
+        fields = ['product', 'quantity', 'order']
+
+    def create(self, validated_data):
+        validated_data['cost'] = validated_data['product'].price
+        return OrderItem.objects.create(**validated_data)
 
 
 class OrderSerializer(serializers.ModelSerializer):
 
     products = serializers.ListField(
-        child=OrderItemSerializer(),
-        allow_empty=False,
+        child=serializers.DictField(),
         write_only=True
     )
 
     class Meta:
         model = Order
-        fields = '__all__'
+        fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
 
-    def save(self, **kwargs):
-        order = Order.objects.create(
-            firstname=self.validated_data['firstname'],
-            lastname=self.validated_data['lastname'],
-            phonenumber=self.validated_data['phonenumber'],
-            address=self.validated_data['address'],
-        )
+    def create(self, validated_data):
+        products = validated_data.pop('products')
+        order = Order.objects.create(**validated_data)
+        for product in products:
+            product['order'] = order.id
+            serializer = OrderItemSerializer(data=product)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
         return order

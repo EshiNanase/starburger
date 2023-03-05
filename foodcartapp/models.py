@@ -2,7 +2,6 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MinValueValidator
 from django.utils import timezone
-from geopy import distance
 from geocoder.models import Address
 
 
@@ -31,6 +30,7 @@ class Restaurant(models.Model):
 
 
 class ProductQuerySet(models.QuerySet):
+
     def available(self):
         products = (
             RestaurantMenuItem.objects
@@ -38,6 +38,18 @@ class ProductQuerySet(models.QuerySet):
             .values_list('product')
         )
         return self.filter(pk__in=products)
+
+    def find_restaurants_with_products(self):
+        restaurants = list(Restaurant.objects.order_by('name'))
+        products_with_restaurant_availability = []
+        for product in self:
+            availability = {item.restaurant_id: item.availability for item in product.menu_items.all()}
+            ordered_availability = [availability.get(restaurant.id, False) for restaurant in restaurants]
+
+            products_with_restaurant_availability.append(
+                (product, ordered_availability)
+            )
+        return products_with_restaurant_availability
 
 
 class ProductCategory(models.Model):
@@ -196,7 +208,7 @@ class Order(models.Model):
         choices=payment_choices,
         blank=True,
         max_length=25,
-        verbose_name='Оплата',
+        verbose_name='Способ оплаты',
         db_index=True
     )
     cooking_restaurant = models.ForeignKey(
@@ -205,7 +217,7 @@ class Order(models.Model):
         to=Restaurant,
         on_delete=models.SET_NULL,
         related_name='restaurant',
-        verbose_name='Ресторан'
+        verbose_name='Готовящий ресторан'
     )
 
     objects = OrderQuerySet.as_manager()
@@ -224,7 +236,7 @@ class OrderItem(models.Model):
         verbose_name='Товар',
         on_delete=models.CASCADE
     )
-    quantity = models.IntegerField(
+    quantity = models.PositiveIntegerField(
         verbose_name='Количество',
     )
     order = models.ForeignKey(

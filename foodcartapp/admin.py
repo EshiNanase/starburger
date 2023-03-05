@@ -4,7 +4,6 @@ from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.encoding import iri_to_uri
-from datetime import datetime
 
 from .models import Product
 from .models import ProductCategory
@@ -149,10 +148,6 @@ class OrderAdmin(admin.ModelAdmin):
     get_cost.short_description = 'Итоговая сумма'
 
     def save_model(self, request, obj, form, change):
-        if obj.cooking_restaurant and obj.status == 'Contacting client':
-            obj.status = 'Packing order'
-        if obj.status != 'Contacting client' and not obj.contacted_at:
-            obj.contacted_at = datetime.now()
         address, created = Address.objects.get_or_create(
             address=obj.address
         )
