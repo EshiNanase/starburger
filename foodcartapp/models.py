@@ -236,7 +236,7 @@ class OrderItem(models.Model):
         verbose_name='Товар',
         on_delete=models.CASCADE
     )
-    quantity = models.PositiveIntegerField(
+    quantity = models.PositiveSmallIntegerField(
         verbose_name='Количество',
     )
     order = models.ForeignKey(

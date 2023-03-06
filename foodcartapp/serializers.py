@@ -6,17 +6,14 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity', 'order']
-
-    def create(self, validated_data):
-        validated_data['cost'] = validated_data['product'].price
-        return OrderItem.objects.create(**validated_data)
+        fields = ['product', 'quantity']
 
 
 class OrderSerializer(serializers.ModelSerializer):
 
-    products = serializers.ListField(
-        child=serializers.DictField(),
+    products = OrderItemSerializer(
+        many=True,
+        allow_null=False,
         write_only=True
     )
 
@@ -28,8 +25,6 @@ class OrderSerializer(serializers.ModelSerializer):
         products = validated_data.pop('products')
         order = Order.objects.create(**validated_data)
         for product in products:
-            product['order'] = order.id
-            serializer = OrderItemSerializer(data=product)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            cost = product['product'].price
+            OrderItem.objects.create(order=order, cost=cost, **product)
         return order
