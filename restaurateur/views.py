@@ -60,13 +60,13 @@ class LogoutView(auth_views.LogoutView):
 
 
 def is_manager(user):
+    a = 1/0
+    print(a)
     return user.is_staff  # FIXME replace with specific permission
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_products(request):
-    a = 1/0
-    print(a)
     restaurants = list(Restaurant.objects.order_by('name'))
     products = Product.objects.prefetch_related('menu_items')
     products_with_restaurant_availability = products.find_restaurants_with_products()
