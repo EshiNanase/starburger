@@ -8,3 +8,4 @@ django-phonenumber-field==7.0.2
 phonenumbers==8.13.6
 django-rest-framework==0.1.0
 geopy==2.3.0
+rollbar==0.16.3
