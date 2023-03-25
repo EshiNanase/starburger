@@ -60,8 +60,6 @@ class LogoutView(auth_views.LogoutView):
 
 
 def is_manager(user):
-    a = 1/0
-    print(a)
     return user.is_staff  # FIXME replace with specific permission
 
 
