@@ -2,7 +2,7 @@
 
 Это сайт сети ресторанов Star Burger. Здесь можно заказать превосходные бургеры с доставкой на дом.
 
-![скриншот сайта](https://dvmn.org/filer/canonical/1594651635/686/)
+![Работающая версия сайта](https://rofloburger.fun/)
 
 
 Сеть Star Burger объединяет несколько ресторанов, действующих под единой франшизой. У всех ресторанов одинаковое меню и одинаковые цены. Просто выберите блюдо из меню на сайте и укажите место доставки. Мы сами найдём ближайший к вам ресторан, всё приготовим и привезём.
@@ -57,7 +57,10 @@ pip install -r requirements.txt
 Определите переменную окружения `SECRET_KEY`. Создать файл `.env` в каталоге `star_burger/` и положите туда такой код:
 ```sh
 SECRET_KEY=django-insecure-0if40nf4nf93n4
-YANDEX_API_TOKEN` — персональный токен HTTTP Геокодера от Яндекс. Получить можно здесь https://developer.tech.yandex.ru/services
+YANDEX_API_TOKEN — персональный токен HTTTP Геокодера от Яндекс. Получить можно здесь https://developer.tech.yandex.ru/services
+ROLLBAR_TOKEN — токен вашего проекта на [Rollbar](https://rollbar.com)
+ROLLBAR_ENVIRONMENT — development, если для разработки, или production, если сайт на продакшене
+POSTGRES_DATABASE_URL — ссылка на базу данных Postgres в формате postgres://localhost:5432/DB_NAME?user=DB_USER&password=DB_USER_PASSWORD
 ```
 
 Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
@@ -149,6 +152,13 @@ Parcel будет следить за файлами в каталоге `bundle
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `YANDEX_API_TOKEN` — персональный токен HTTTP Геокодера от Яндекс. Получить можно [здесь](https://developer.tech.yandex.ru/services)
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
+- `ROLLBAR_TOKEN` — токен вашего проекта на [Rollbar](https://rollbar.com)
+- `ROLLBAR_ENVIRONMENT` — development, если для разработки, или production, если сайт на продакшене
+- `POSTGRES_DATABASE_URL` — ссылка на базу данных Postgres в формате postgres://localhost:5432/DB_NAME?user=DB_USER&password=DB_USER_PASSWORD
+
+## Как быстро задеплоить код на сервере
+- Перейти в директорию /opt/devman/starburger
+- Запустить ./starburger_deploy
 
 ## Цели проекта
 
