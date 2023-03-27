@@ -58,8 +58,8 @@ pip install -r requirements.txt
 ```sh
 SECRET_KEY=django-insecure-0if40nf4nf93n4
 YANDEX_API_TOKEN — персональный токен HTTTP Геокодера от Яндекс. Получить можно здесь https://developer.tech.yandex.ru/services
-ROLLBAR_TOKEN — токен вашего проекта на [Rollbar](https://rollbar.com)
 ROLLBAR_ENVIRONMENT — development, если для разработки, или production, если сайт на продакшене
+ROLLBAR_TOKEN — (если ROLLBAR_ENVIRONMENT=development, то можно пропустить) токен вашего проекта на [Rollbar](https://rollbar.com)
 POSTGRES_DATABASE_URL — ссылка на базу данных Postgres в формате postgres://localhost:5432/DB_NAME?user=DB_USER&password=DB_USER_PASSWORD
 ```
 
@@ -152,8 +152,8 @@ Parcel будет следить за файлами в каталоге `bundle
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `YANDEX_API_TOKEN` — персональный токен HTTTP Геокодера от Яндекс. Получить можно [здесь](https://developer.tech.yandex.ru/services)
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
+- `ROLLBAR_ENVIRONMENT` — production, т.к. сайт будет открыт публике
 - `ROLLBAR_TOKEN` — токен вашего проекта на [Rollbar](https://rollbar.com)
-- `ROLLBAR_ENVIRONMENT` — development, если для разработки, или production, если сайт на продакшене
 - `POSTGRES_DATABASE_URL` — ссылка на базу данных Postgres в формате postgres://localhost:5432/DB_NAME?user=DB_USER&password=DB_USER_PASSWORD
 
 ## Как быстро задеплоить код на сервере
