@@ -131,7 +131,7 @@ STATICFILES_DIRS = [
 YANDEX_API_TOKEN = env.str('YANDEX_API_TOKEN')
 
 
-if env.bool('ROLLBAR_STATUS', False):
+if env.str('ROLLBAR_ENVIRONMENT', 'development') == 'production':
     ROLLBAR = {
         'access_token': env.str('ROLLBAR_TOKEN'),
         'environment': env.str('ROLLBAR_ENVIRONMENT'),
