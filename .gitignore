@@ -146,3 +146,6 @@ cython_debug/
 starburger_deploy
 static/
 staticfiles/
+
+package.json
+package-lock.json
